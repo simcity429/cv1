@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from task1.utils import calculate_rms
+from task1.utils import calculate_rms, calculate_rms_cropped
 from task1.mylib_task1 import average_convolve, median_convolve, gaussian, dist_arr, bilateral_convolve
 """
 This is main function for task 1.
@@ -15,16 +15,16 @@ def task1(src_img_path, dst_img_path, answer_path):
     answer = cv2.imread(answer_path)
     img = cv2.imread(src_img_path)
     best_img = np.zeros(img.shape)
-    best_value = calculate_rms(answer, best_img)
-    kernel_size = [3,5,7,11,17]
-    sigma_s_list = [10, 25, 50, 75, 100, 150]
-    sigma_r_list = [10, 25, 50, 75, 100, 150]
+    best_value = calculate_rms_cropped(answer, best_img)
+    kernel_size = [3,5,7,9,11,13,15]
+    sigma_s_list = [75]
+    sigma_r_list = [10, 25, 50, 75]
     #calculate average_filter
     print('average filter')
     for k in kernel_size:
         print('k: ', k)
         tmp = apply_average_filter(img, k)
-        err = calculate_rms(answer, tmp)
+        err = calculate_rms_cropped(answer, tmp)
         if best_value > err:
             print('best!')
             best_img = tmp
@@ -36,7 +36,7 @@ def task1(src_img_path, dst_img_path, answer_path):
     for k in kernel_size:
         print('k: ', k)
         tmp = apply_median_filter(img, k)
-        err = calculate_rms(answer, tmp)
+        err = calculate_rms_cropped(answer, tmp)
         if best_value > err:
             print('best!')
             best_img = tmp
@@ -51,7 +51,7 @@ def task1(src_img_path, dst_img_path, answer_path):
             for k in kernel_size:
                 print('i, j ,k: ', i, " ", j, " ", k)
                 tmp = apply_bilateral_filter(img, k, i, j)
-                err = calculate_rms(answer, tmp)
+                err = calculate_rms_cropped(answer, tmp)
                 print('bilateral err: ', err)
                 if best_value > err:
                     print('best!')
@@ -61,6 +61,7 @@ def task1(src_img_path, dst_img_path, answer_path):
                     cv2.imwrite(dst_img_path, best_img)
     print("best value: ", best_value)
     cv2.imwrite(dst_img_path, best_img)
+    return best_value
 
 
 """
@@ -117,6 +118,7 @@ You should return result image.
 def apply_bilateral_filter(img, kernel_size, sigma_s, sigma_r):
     dst = np.copy(img)
     d = int((kernel_size - 1) / 2)
+    sigma_s = d/3
     gaussian_arr = gaussian(sigma_s, dist_arr(d))
     for i in range(img.shape[0]):
         for j in range(img.shape[1]):
@@ -124,10 +126,11 @@ def apply_bilateral_filter(img, kernel_size, sigma_s, sigma_r):
             dst[i, j] = pixel
     return dst
 
-src_path = "task1_sample3_noise.png"
-answer_path = "task1_sample3_clean.png"
 dst_path = "answer.png"
-input = cv2.imread(src_path)
-answer = cv2.imread(answer_path)
-print('noise-answer value: ', calculate_rms(input, answer))
-task1(src_path, dst_path, answer_path)
+src_path = ['test1_noise.png','test2_noise.png','test3_noise.png','test4_noise.png','test5_noise.png',]
+answer_path = ['test1_clean.png','test2_clean.png','test3_clean.png','test4_clean.png','test5_clean.png']
+best_value = []
+for s, a in zip(src_path, answer_path):
+    v = task1(s, dst_path, a)
+    best_value.append(v)
+print(best_value)

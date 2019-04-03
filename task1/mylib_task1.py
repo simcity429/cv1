@@ -91,6 +91,7 @@ def apply_median_filter(img, kernel_size):
 def apply_bilateral_filter(img, kernel_size, sigma_s, sigma_r):
     dst = np.copy(img)
     d = int((kernel_size-1)/2)
+    sigma_s = int(d/3)
     gaussian_arr = gaussian(sigma_s, dist_arr(d))
     for i in range(img.shape[0]):
         for j in range(img.shape[1]):
